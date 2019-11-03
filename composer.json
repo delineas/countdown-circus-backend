@@ -1,0 +1,8 @@
+{
+    "require": {
+        "slim/slim": "4.2.0",
+        "slim/psr7": "^0.6.0",
+        "nesbot/carbon": "^2.25",
+        "php-di/slim-bridge": "^3.0"
+    }
+}
