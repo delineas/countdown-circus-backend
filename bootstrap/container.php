@@ -10,3 +10,8 @@ AppFactory::setContainer($container);
 $container->set('carbon', function () {
     return new Carbon();
 });
+
+
+
+// End line
+$app = AppFactory::create();
