@@ -10,6 +10,15 @@ AppFactory::setContainer($container);
 $container->set('carbon', function () {
     return new Carbon();
 });
+$container->set('db', function() {
+    try {
+        return new \PDO("Asqlite:database/db.sqlite");
+    } catch (\PDOException $e) {
+        var_dump('Error DB: ' . $e->getMessage());
+        exit();
+    }
+    
+});
 
 
 

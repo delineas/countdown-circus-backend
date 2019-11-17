@@ -9,21 +9,40 @@ $app->get('/test', function (Request $request, Response $response, $args) {
 });
 
 $app->get('/api/countdowns', function (Request $request, Response $response, $args) {
-    $data = [
-        [
-            'id' => 1,
-            'name' => 'Boda de Carlos',
-            'time_end' => $this->get('carbon')::now()->toString()
-        ],
-        [
-            'id' => 2,
-            'name' => 'Cumple del Taru',
-            'time_end' => $this->get('carbon')::now()->toString()
-        ]
-    ];
 
-    $payload = json_encode($data);
-    $response->getBody()->write($payload);
+    $statement = $this->get('db')->query("SELECT * FROM countdowns");
+
+    $results = [];
+    while($result = $statement->fetch(\PDO::FETCH_ASSOC)) {
+        $result['date_diff'] = $this->get('carbon')::rawParse($result['date'])->diffInDays();
+        $results[] = $result;
+    }
+
+    $response->getBody()->write(json_encode($results));
     return $response
         ->withHeader('Content-Type', 'application/json');
+});
+
+$app->post('/api/countdowns', function (Request $request, Response $response){
+    $title = $request->getParsedBody()['title'];
+    $date = $request->getParsedBody()['date'];
+
+    if(strtotime($date) === FALSE) {
+        return $response
+            ->withStatus(400);
+    }
+
+    $statement = $this->get('db')->prepare("INSERT INTO countdowns (title, date) VALUES (:title, :date)");
+    $statement->execute([
+        ':title' => $title,
+        ':date' => $date
+    ]);
+
+    $response->getBody()->write(json_encode([
+        'id' => $this->get('db')->lastInsertId()
+    ]));
+    return $response
+        ->withStatus(200)
+        ->withHeader('Content-Type', 'application/json');
+
 });
