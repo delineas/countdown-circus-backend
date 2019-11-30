@@ -12,7 +12,7 @@ $container->set('carbon', function () {
 });
 $container->set('db', function() {
     try {
-        return new \PDO("Asqlite:database/db.sqlite");
+        return new \PDO("sqlite:database/db.sqlite");
     } catch (\PDOException $e) {
         var_dump('Error DB: ' . $e->getMessage());
         exit();
