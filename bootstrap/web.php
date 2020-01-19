@@ -2,7 +2,7 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-
+use Valitron\Validator;
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -55,13 +55,23 @@ $app->get('/api/countdowns/{id}', function (Request $request, Response $response
 });
 
 $app->post('/api/countdowns', function (Request $request, Response $response){
+
+    $validator = new Validator($request->getParsedBody());
+    $validator->rule('required', ['title', 'date']);
+    $validator->rule('date', 'date')->message('Fecha no valida');
+    $validator->rule('dateAfter', 'date', $this->get('carbon')::now())->message('La fecha tiene que ser posterior a la de hoy');
+    
+    if(!$validator->validate()) {
+        $response->getBody()->write(json_encode([
+            'errors' => $validator->errors()
+        ]));
+        return $response
+            ->withStatus(422)
+            ->withHeader('Content-Type', 'application/json');
+    }
+
     $title = $request->getParsedBody()['title'];
     $date = $request->getParsedBody()['date'];
-
-    if(strtotime($date) === FALSE) {
-        return $response
-            ->withStatus(400);
-    }
 
     $statement = $this->get('db')->prepare("INSERT INTO countdowns (title, date) VALUES (:title, :date)");
     $statement->execute([
