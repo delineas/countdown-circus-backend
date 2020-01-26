@@ -1,8 +1,9 @@
 <?php
 
+use Valitron\Validator;
+use App\Controller\CountdownController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Valitron\Validator;
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -21,20 +22,7 @@ $app->get('/test', function (Request $request, Response $response, $args) {
     return $response;
 });
 
-$app->get('/api/countdowns', function (Request $request, Response $response, $args) {
-
-    $statement = $this->get('db')->query("SELECT * FROM countdowns");
-
-    $results = [];
-    while($result = $statement->fetch(\PDO::FETCH_ASSOC)) {
-        $result['date_diff'] = $this->get('carbon')::rawParse($result['date'])->diffInDays();
-        $results[] = $result;
-    }
-
-    $response->getBody()->write(json_encode($results));
-    return $response
-        ->withHeader('Content-Type', 'application/json');
-});
+$app->get('/api/countdowns', '\App\Controllers\CountdownController:list');
 
 $app->get('/api/countdowns/{id}', function (Request $request, Response $response, $args) {
 
