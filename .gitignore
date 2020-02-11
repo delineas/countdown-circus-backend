@@ -1,3 +1,4 @@
 vendor
-database/*
+database/.*
+!database/.gitkeep 
 .env
